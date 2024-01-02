@@ -3,17 +3,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:ticket_booking/Controller/movie_card.dart';
 import 'package:ticket_booking/Controller/movie_search.dart';
+import 'package:ticket_booking/Controller/rating_widget.dart';
 import 'package:ticket_booking/Model/custom_colors.dart';
+import 'package:ticket_booking/Model/ticket_data.dart';
 import 'package:ticket_booking/View/movie_detail.dart';
+import 'package:ticket_booking/View/signIn_page.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
+
   List<dynamic> movies = [];
 
   @override
@@ -22,40 +29,23 @@ class _HomePageState extends State<HomePage> {
     fetchMovies();
   }
 
-  Future<void> fetchMovies({String? query}) async {
-    const apiKey = '6b692b63427c54c00336888a46c856b5';
-    var url = Uri.https(
-      'api.themoviedb.org',
-      '/3/movie/popular',
-      {'api_key': apiKey, 'query': query ?? ''},
-    );
-
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      setState(() {
-        movies = jsonDecode(response.body)['results'];
-        // print("$movies");
-      });
-    } else {
-      throw Exception('Failed to load movies');
-    }
-  }
-
-  Future<void> searchMovies(String query) async {
-    await fetchMovies(query: query);
-  }
-
-  List<dynamic> sortMoviesByRating(List<dynamic> movies) {
-    movies.sort((a, b) => b['vote_average'].compareTo(a['vote_average']));
-    return movies;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: CustomColors.primaryColor,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.search,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            showSearch(
+              context: context,
+              delegate: MovieSearch(movies, searchMovies, context),
+            );
+          },
+        ),
         backgroundColor: CustomColors.primaryColor,
         title: const Text(
           'Ticket Booking',
@@ -68,23 +58,16 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(
-              Icons.search,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: MovieSearch(movies, searchMovies, context),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(
               Icons.exit_to_app,
               color: Colors.white,
             ),
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => const SignInPage(),
+                ),
+              );
             },
           ),
         ],
@@ -123,14 +106,32 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Container(
                             width: MediaQuery.of(context).size.width,
-                            margin: EdgeInsets.symmetric(horizontal: 5.0),
+                            margin: const EdgeInsets.symmetric(horizontal: 5.0),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8.0),
                               image: DecorationImage(
                                 image: NetworkImage(
-                                  'https://image.tmdb.org/t/p/w300${movie['poster_path']}',
+                                  'https://image.tmdb.org/t/p/w500${movie['poster_path']}',
                                 ),
                                 fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 70,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Colors.black.withOpacity(0.8),
+                                    Colors.transparent,
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -139,26 +140,27 @@ class _HomePageState extends State<HomePage> {
                             left: 2,
                             right: 0,
                             child: Container(
-                              padding: EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.8),
-                                    Colors.transparent
-                                  ],
-                                ),
-                              ),
-                              child: Text(
-                                movie['title'],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20.0,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    movie['title'],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20.0,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 3),
+                                  RatingWidget(
+                                    voteAverage:
+                                        movie['vote_average'].toDouble(),
+                                    voteCount: movie['vote_count'] as int,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -183,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             SizedBox(
@@ -209,12 +211,12 @@ class _HomePageState extends State<HomePage> {
                         ),
                       );
                     },
-                    child: _buildCard(movies[index]),
+                    child: MovieCardWidget(movie: movies[index]),
                   );
                 },
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             const Padding(
@@ -228,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             SizedBox(
@@ -247,6 +249,7 @@ class _HomePageState extends State<HomePage> {
 
                   return GestureDetector(
                     onTap: () {
+                      // checkCurrentUserId();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -256,7 +259,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       );
                     },
-                    child: _buildMovieCard(sortedMovies[index]),
+                    child: MovieCardWidget(movie: sortedMovies[index]),
                   );
                 },
               ),
@@ -267,125 +270,42 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildCard(dynamic movie) {
-    return Card(
-      elevation: 4.0,
-      color: CustomColors.primaryColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 0.7,
-            child: ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(8.0)),
-              child: movie['poster_path'] != null
-                  ? AspectRatio(
-                      aspectRatio: 0.7,
-                      child: Image.network(
-                        'https://image.tmdb.org/t/p/w500${movie['poster_path']}',
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : const SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: Icon(Icons.movie),
-                    ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  movie['title'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                    color: CustomColors.secondaryColor,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4.0),
-                Text(
-                  'Release Date: ${movie['release_date']}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  Future<void> fetchMovies({String? query}) async {
+    const apiKey = '6b692b63427c54c00336888a46c856b5';
+    var url = Uri.https(
+      'api.themoviedb.org',
+      '/3/movie/popular',
+      {'api_key': apiKey, 'query': query ?? ''},
     );
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      setState(() {
+        movies = jsonDecode(response.body)['results'];
+        // print("$movies");
+      });
+    } else {
+      throw Exception('Failed to load movies');
+    }
   }
 
-  Widget _buildMovieCard(dynamic movie) {
-    return Card(
-      elevation: 4.0,
-      color: CustomColors.primaryColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 0.7,
-            child: ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(8.0)),
-              child: movie['poster_path'] != null
-                  ? AspectRatio(
-                      aspectRatio: 0.7,
-                      child: Image.network(
-                        'https://image.tmdb.org/t/p/w500${movie['poster_path']}',
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : const SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: Icon(Icons.movie),
-                    ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  movie['title'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                    color: CustomColors.secondaryColor,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4.0),
-                Text(
-                  'Release Date: ${movie['release_date']}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  Future<void> searchMovies(String query) async {
+    await fetchMovies(query: query);
   }
+
+  List<dynamic> sortMoviesByRating(List<dynamic> movies) {
+    movies.sort((a, b) => b['vote_average'].compareTo(a['vote_average']));
+    return movies;
+  }
+
+  // void checkCurrentUserId() {
+  //   User? user = FirebaseAuth.instance.currentUser;
+
+  //   if (user != null) {
+  //     ticketBookingData.id = user.uid;
+
+  //     print('Current user ID: ${ticketBookingData.id}');
+  //   }
+  // }
 }

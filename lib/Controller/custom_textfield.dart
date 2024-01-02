@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:ticket_booking/Model/custom_colors.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hintText;
@@ -8,9 +10,11 @@ class CustomTextField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final IconData? leadingIcon;
   final VoidCallback? onTap;
+  final List<TextInputFormatter>? inputFormatters; // Added input formatters
+  final String? prefixText; // Added prefix text
 
   const CustomTextField({
-    super.key,
+    Key? key,
     required this.hintText,
     required this.controller,
     this.keyboardType,
@@ -18,39 +22,43 @@ class CustomTextField extends StatefulWidget {
     this.validator,
     this.leadingIcon,
     this.onTap,
-  });
+    this.inputFormatters, // Updated to accept input formatters
+    this.prefixText, // Updated to accept prefix text
+  }) : super(key: key);
 
   @override
-  _CustomTextFieldState createState() => _CustomTextFieldState();
+  CustomTextFieldState createState() => CustomTextFieldState();
 }
 
-class _CustomTextFieldState extends State<CustomTextField> {
+class CustomTextFieldState extends State<CustomTextField> {
   bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         controller: widget.controller,
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: widget.hintText,
-          hintStyle: TextStyle(color: Colors.grey),
-          labelStyle: TextStyle(color: Colors.grey),
+          prefixText: widget.prefixText,
+          prefixStyle: const TextStyle(color: Colors.grey),
+          hintStyle: const TextStyle(color: Colors.grey),
+          labelStyle: const TextStyle(color: Colors.grey),
           contentPadding:
-              EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+              const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.white,
               width: 1.0,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: BorderSide(
-              color: Theme.of(context).primaryColor,
+            borderSide: const BorderSide(
+              color: CustomColors.secondaryColor,
               width: 2.0,
             ),
           ),
@@ -63,14 +71,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.red,
               width: 1.0,
             ),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.red,
               width: 2.0,
             ),
@@ -99,6 +107,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         obscureText: widget.obscureText && _obscureText,
         validator: widget.validator,
         onTap: widget.onTap,
+        inputFormatters: widget.inputFormatters, // Added input formatters
       ),
     );
   }

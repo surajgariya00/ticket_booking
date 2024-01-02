@@ -6,14 +6,15 @@ import 'package:ticket_booking/Controller/custom_button.dart';
 import 'package:ticket_booking/Controller/custom_textfield.dart';
 import 'package:ticket_booking/Controller/forgot_password.dart';
 import 'package:ticket_booking/View/home_page.dart';
-import 'package:ticket_booking/View/signup_page.dart';
 
 class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
+
   @override
-  _SignInPageState createState() => _SignInPageState();
+  SignInPageState createState() => SignInPageState();
 }
 
-class _SignInPageState extends State<SignInPage> {
+class SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -25,37 +26,13 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
-  Future<void> signIn() async {
-    try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-
-      if (userCredential.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      }
-    } catch (e) {
-      print('Failed to sign in: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid email or password. Please try again.'),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Form(
               key: _formKey,
               child: Column(
@@ -71,7 +48,7 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 24.0),
+                  const SizedBox(height: 24.0),
                   CustomTextField(
                     leadingIcon: Icons.person,
                     hintText: 'Email',
@@ -98,7 +75,7 @@ class _SignInPageState extends State<SignInPage> {
                     },
                   ),
                   Padding(
-                    padding: EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(6),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -106,7 +83,7 @@ class _SignInPageState extends State<SignInPage> {
                             onTap: () {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
-                                return ForgotPasswordPage();
+                                return const ForgotPasswordPage();
                               }));
                             },
                             child: const Text(
@@ -123,15 +100,12 @@ class _SignInPageState extends State<SignInPage> {
                         signIn();
                       }
                     },
-                    buttonText: 'Login',
+                    buttonText: 'Sign In',
                   ),
                   const SizedBox(height: 16.0),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SignupPage()),
-                      );
+                      Navigator.pushNamed(context, '/signUp');
                     },
                     child: RichText(
                       text: const TextSpan(
@@ -156,5 +130,29 @@ class _SignInPageState extends State<SignInPage> {
         ),
       ),
     );
+  }
+
+  Future<void> signIn() async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      if (userCredential.user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      }
+    } catch (e) {
+      print('Failed to sign in: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid email or password. Please try again.'),
+        ),
+      );
+    }
   }
 }

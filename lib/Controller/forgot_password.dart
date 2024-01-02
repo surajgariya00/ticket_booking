@@ -4,14 +4,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ticket_booking/Controller/custom_button.dart';
 import 'package:ticket_booking/Controller/custom_textfield.dart';
-import 'package:ticket_booking/View/signIn_page.dart'; // Import the SignInPage
+import 'package:ticket_booking/View/signIn_page.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({super.key});
+
   @override
-  _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
+  ForgotPasswordPageState createState() => ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController usernameController = TextEditingController();
 
   @override
@@ -36,11 +38,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // Dismiss dialog
+                  Navigator.pop(context);
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => SignInPage()),
-                  ); // Navigate back to SignInPage
+                  );
                 },
                 child: const Text(
                   'Return to Sign In',
@@ -70,44 +72,46 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Container(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Forgot Password',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Forgot Password',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16.0),
-              const Text(
-                'Enter your email and we\'ll send you a password reset link',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
+                const SizedBox(height: 16.0),
+                const Text(
+                  'Enter your email and we\'ll send you a password reset link',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24.0),
-              CustomTextField(
-                hintText: 'Enter email',
-                controller: usernameController,
-              ),
-              const SizedBox(height: 16.0),
-              CustomButton(
-                onPressed: () {
-                  passwordReset();
-                },
-                buttonText: 'Reset Password',
-              ),
-            ],
+                const SizedBox(height: 24.0),
+                CustomTextField(
+                  hintText: 'Enter email',
+                  controller: usernameController,
+                ),
+                const SizedBox(height: 16.0),
+                CustomButton(
+                  onPressed: () {
+                    passwordReset();
+                  },
+                  buttonText: 'Reset Password',
+                ),
+              ],
+            ),
           ),
         ),
       ),

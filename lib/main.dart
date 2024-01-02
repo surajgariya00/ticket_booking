@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ticket_booking/Model/custom_colors.dart';
+import 'package:ticket_booking/View/home_page.dart';
 import 'package:ticket_booking/View/signIn_page.dart';
 import 'package:ticket_booking/View/signup_page.dart';
 
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Ticket Booking',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch().copyWith(
           background: CustomColors.primaryColor,
@@ -34,9 +35,15 @@ class MyApp extends StatelessWidget {
         ),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         useMaterial3: true,
-        textTheme: GoogleFonts.openSansTextTheme(),
+        textTheme: GoogleFonts.robotoTextTheme(),
       ),
-      home: SignInPage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SignInPage(),
+        '/signIn': (context) => const SignInPage(),
+        '/signUp': (context) => const SignupPage(),
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 }

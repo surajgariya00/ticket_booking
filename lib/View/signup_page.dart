@@ -1,23 +1,26 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ticket_booking/Controller/custom_button.dart';
 import 'package:ticket_booking/Controller/custom_textfield.dart';
 import 'package:ticket_booking/View/home_page.dart';
-import 'package:ticket_booking/View/signIn_page.dart';
 
 class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
+
   @override
-  _SignupPageState createState() => _SignupPageState();
+  SignupPageState createState() => SignupPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
-  final TextEditingController emailController = TextEditingController();
 
   @override
   void dispose() {
@@ -25,60 +28,6 @@ class _SignupPageState extends State<SignupPage> {
     confirmPasswordController.dispose();
     emailController.dispose();
     super.dispose();
-  }
-
-  Future registerUser() async {
-    if (passwordConfirmed()) {
-      try {
-        UserCredential userCredential =
-            await _auth.createUserWithEmailAndPassword(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-
-        if (userCredential.user != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
-        }
-      } catch (e) {
-        String errorMessage = 'An error occurred. Please try again.';
-        if (e is FirebaseAuthException) {
-          switch (e.code) {
-            case 'weak-password':
-              errorMessage = 'The password provided is too weak.';
-              break;
-            case 'email-already-in-use':
-              errorMessage = 'The account already exists for that email.';
-              break;
-            default:
-              errorMessage = 'Authentication failed. Please try again later.';
-          }
-        }
-
-        // Show error message in a Snackbar
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-          ),
-        );
-      }
-    }
-  }
-
-  bool passwordConfirmed() {
-    if (passwordController.text.trim() ==
-        confirmPasswordController.text.trim()) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegex.hasMatch(email);
   }
 
   @override
@@ -169,10 +118,9 @@ class _SignupPageState extends State<SignupPage> {
                         const SizedBox(height: 16.0),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(
+                            Navigator.pushNamed(
                               context,
-                              MaterialPageRoute(
-                                  builder: (context) => SignInPage()),
+                              '/signIn',
                             );
                           },
                           child: RichText(
@@ -201,5 +149,58 @@ class _SignupPageState extends State<SignupPage> {
         ),
       ),
     );
+  }
+
+  Future registerUser() async {
+    if (passwordConfirmed()) {
+      try {
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        if (userCredential.user != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
+      } catch (e) {
+        String errorMessage = 'An error occurred. Please try again.';
+        if (e is FirebaseAuthException) {
+          switch (e.code) {
+            case 'weak-password':
+              errorMessage = 'The password provided is too weak.';
+              break;
+            case 'email-already-in-use':
+              errorMessage = 'The account already exists for that email.';
+              break;
+            default:
+              errorMessage = 'Authentication failed. Please try again later.';
+          }
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+          ),
+        );
+      }
+    }
+  }
+
+  bool passwordConfirmed() {
+    if (passwordController.text.trim() ==
+        confirmPasswordController.text.trim()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
   }
 }
